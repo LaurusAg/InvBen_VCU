@@ -22,7 +22,6 @@ void setup() {
   Serial.begin(115200);
 
   ventilatorInit();
-
   setup_wifi();
   setup_mqtt();
 
@@ -53,7 +52,6 @@ void loop() {
         float pressureValue = pressureControl();
         Serial.println(pressureValue);
         bool result = logicProcess(pressureValue);
-        //Go to publish value of result!
         Serial.print(result);
         sensorDelay.reset();
   }

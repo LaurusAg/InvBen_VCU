@@ -7,14 +7,27 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
+struct connectionInfo
+{
+    const char* ssid;
+    const char* password;
+    const char* mqtt_server;
+    const int   mqttPort;
+    const char* mqttUser;
+    const char* mqttPassword;
+};
+
+
 extern WiFiClient VCU;
 extern PubSubClient client;
-connect officeConnection;
+extern connectionInfo benavidezConnection;
 
-void setup_init();
+
 void setup_wifi();
 void setup_mqtt();
 void reconnect();
 void callback();
+void publishPressure(float pressure);
+void publishVentState(bool ventState);
 
 #endif

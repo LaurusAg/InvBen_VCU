@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include "sensor.h"
-
+#include "connect.h"
 
   ventilator backupVentilator;
 
@@ -24,7 +24,7 @@ void ventilatorInit()
   backupVentilator.vent_state = false;
   backupVentilator.on_pressure = 200; 
   backupVentilator.off_pressure = 700;
-  
+
 }
 
 
@@ -61,6 +61,8 @@ float pressureControl()
     v =((sensor * actualValues.max_tension)/actualValues.adc_value);
     backupVentilator.pressure = mapfloat(v, actualValues.min_tension, actualValues.max_tension, actualValues.min_pressure, actualValues.max_pressure);
 
+    publishPressure(backupVentilator.pressure);
+
     return backupVentilator.pressure;
     
 }
@@ -87,6 +89,9 @@ bool logicProcess(float pressure)
     }
   }
   
+  publishVentState(backupVentilator.vent_state);
+
+
   return false;
 
 }

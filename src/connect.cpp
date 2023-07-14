@@ -6,29 +6,23 @@
 WiFiClient VCU;
 PubSubClient client(VCU);
 
-struct connect
+connectionInfo benavidezConnection = 
 {
-    const char* ssid;
-    const char* password;
-    const char* mqtt_server;
-    const int   mqttPort;
-    const char* mqttUser;
-    const char* mqttPassword;
-};
-
-/*setup: saves configuration values of WiFi & MQTT.
-    has to be called from SETUP!
-*/
-void setup_init() 
-{
-    connect benavidezConnection = {"Laurus 2.4GHz", "LaurusBialetti","192.168.0.8","1883","pi","laurus"};    
-
-}
+    "Laurus 2.4GHz", 
+    "LaurusBialetti",
+    "192.168.0.8",
+    1883,
+    "pi",
+    "laurus"
+};    
 
 
-/*setup_wifi: connects the device to the wifi service!
-    has to be called from SETUP!
-*/
+
+/**
+ * @brief connects the device to the wifi service!
+ *         has to be called from SETUP!
+ * @return true if interval has expired, false if not.
+ */
 
 void setup_wifi()
 {
@@ -42,11 +36,12 @@ void setup_wifi()
     Serial.print("Connected to WiFi!!");
 }
 
-    
-/*setup_mqtt connects the device with the mqtt server.
-after it connects, you can subscribe to topics to hear them!
-has to be called from SETUP!
-*/
+
+/**
+ * @brief connects the device with the mqtt server.
+ *        after it connects, you can subscribe to topics to hear them!
+ *        has to be called from SETUP!
+ */
 void setup_mqtt()
 {
 
@@ -74,9 +69,12 @@ client.setServer(benavidezConnection.mqtt_server, benavidezConnection.mqttPort);
 }
 
 
-/* Recconect: once we are connected, we run the loop,
- if we go offline in any moment, we call this function 
- from loop and stay here until we reconnect to all services!
+
+/**
+ * @brief once we are connected, we run the loop,
+ *if we go offline in any moment, we call this function 
+ *from loop and stay here until we reconnect to all services! 
+ * @return true if interval has expired, false if not.
  */
 void reconnect()
 {
@@ -94,11 +92,41 @@ void reconnect()
     }
 }
 
-/*callback: use if you have to receive orders from CCU.
-first subscribe in setup_mqtt & reconnect.
-*/
 
+/**
+ * @brief use if you have to receive orders from CCU.
+ *first subscribe in setup_mqtt & reconnect.
+ * 
+ * @return true if interval has expired, false if not.
+ */
 void callback()
 {
         //make subscriptions.
+}
+
+
+/** 
+* @brief Publish value of pressure
+*
+*@return NULL
+*/
+void publishPressure(float pressure)
+{
+    const char* topic = "";
+    char message[10];
+    snprintf(message, sizeof(message), "%.2f", pressure);
+    client.publish(topic,message);
+}
+
+
+/** 
+* @brief publish value of ventilator state.
+*
+*@return NULL
+*/
+void publishVentState(bool ventState)
+{
+    const char* topic = "backupVentilator/ventState";
+    const char* message = ventState ? "true" : "false";
+    client.publish(topic, message);
 }

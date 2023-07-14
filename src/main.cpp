@@ -54,7 +54,7 @@ void loop() {
         Serial.println(pressureValue);
         bool result = logicProcess(pressureValue);
         //Go to publish value of result!
-        
+        Serial.print(result);
         sensorDelay.reset();
   }
 

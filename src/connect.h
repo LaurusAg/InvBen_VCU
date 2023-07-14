@@ -7,8 +7,8 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
-   extern WiFiClient VCU;
-   extern PubSubClient client (VCU);
+extern WiFiClient VCU;
+extern PubSubClient client;
 
 void setup_wifi();
 void setup_mqtt();

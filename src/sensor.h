@@ -1,8 +1,16 @@
 //Header file for sensor functions
 //In this file we can find al the function declarations.
 
-#ifndef CONNECT_H
-#define CONNECT_H
+#ifndef SENSOR_H
+#define SENSOR_H
+
+    typedef struct 
+    {
+    uint16_t on_pressure;
+    uint16_t off_pressure;
+    bool vent_state;
+    float pressure;
+    }ventilator;
 
 
 //Functions: 

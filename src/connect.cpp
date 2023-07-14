@@ -3,7 +3,8 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
-
+WiFiClient VCU;
+PubSubClient client(VCU);
 
 
     const char* ssid =         "Laurus 2.4GHz";

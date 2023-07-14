@@ -12,6 +12,9 @@
 #include <PubSubClient.h>
 #include "connect.h"
 #include "sensor.h"
+#include "delay.h"
+
+Delay sensorDelay;
 
 
 void setup() {
@@ -20,8 +23,8 @@ void setup() {
   setup_wifi();
   setup_mqtt();
 
-  //pinMode declarations:
-
+  //time declarations:
+  sensorDelay.start(5000);
 
 }
 
@@ -36,28 +39,15 @@ void loop() {
 
         client.loop(); 
 
-        //make a clock to call pressureControl every 5 seconds.
-      pressureControl();
-      if(vent_state == false)
-      {
-        if(p < off_pressure)
-        {
-          //OUT = ON!
-          vent_state = true;
-          client.publish("CCU/inflado", "1");
-          char pressure [bytes_amount];
-          client.publish("CCU/presion",p);
+  
+  if(sensorDelay.isExpired())
+  {
+       float pressureValue = pressureControl();
+        Serial.println(pressureValue);
 
-        }
-      } else if(vent_state == true)
-      {
-        if (p > on_pressure) 
-        {
-          //OUT = OFF!
-          vent_state = false;
-          client.publish("CCU/inflado","0");
-        }
-      }
+        sensorDelay.reset();
+  }
+
 
 }
 

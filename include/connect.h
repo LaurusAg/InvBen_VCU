@@ -9,7 +9,9 @@
 
 extern WiFiClient VCU;
 extern PubSubClient client;
+connect officeConnection;
 
+void setup_init();
 void setup_wifi();
 void setup_mqtt();
 void reconnect();

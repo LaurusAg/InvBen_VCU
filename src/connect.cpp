@@ -6,13 +6,25 @@
 WiFiClient VCU;
 PubSubClient client(VCU);
 
+struct connect
+{
+    const char* ssid;
+    const char* password;
+    const char* mqtt_server;
+    const int   mqttPort;
+    const char* mqttUser;
+    const char* mqttPassword;
+};
 
-    const char* ssid =         "Laurus 2.4GHz";
-    const char* password =     "LaurusBialetti";
-    const char* mqtt_server =  "192.168.0.8";
-    const int   mqttPort =      1883;
-    const char* mqttUser =      "pi";
-    const char* mqttPassword =  "laurus";
+/*setup: saves configuration values of WiFi & MQTT.
+    has to be called from SETUP!
+*/
+void setup_init() 
+{
+    connect benavidezConnection = {"Laurus 2.4GHz", "LaurusBialetti","192.168.0.8","1883","pi","laurus"};    
+
+}
+
 
 /*setup_wifi: connects the device to the wifi service!
     has to be called from SETUP!
@@ -20,7 +32,8 @@ PubSubClient client(VCU);
 
 void setup_wifi()
 {
-    WiFi.begin(ssid, password);
+
+    WiFi.begin(benavidezConnection.ssid, benavidezConnection.password);
     while(WiFi.status() != WL_CONNECTED) 
     {
         delay(500);
@@ -40,7 +53,7 @@ void setup_mqtt()
 
     while(!client.connected()) {
         Serial.println("Connecting to mqtt server..");
-        if(!client.connect("CCU", mqttUser, mqttPassword))
+        if(!client.connect("CCU", benavidezConnection.mqttUser, benavidezConnection.mqttPassword))
         {
             Serial.println("Connected to MQTT server!");
         } else 
@@ -57,7 +70,7 @@ void setup_mqtt()
     */
     
     delay(10);
-client.setServer(mqtt_server, mqttPort);
+client.setServer(benavidezConnection.mqtt_server, benavidezConnection.mqttPort);
 }
 
 
@@ -73,7 +86,7 @@ void reconnect()
         //make a clock period here to use non-blocking functions!
         Serial.println("Reconnecting client with mqtt server..");
 
-        if(client.connect("VCU",mqttUser,mqttPassword))
+        if(client.connect("VCU",benavidezConnection.mqttUser,benavidezConnection.mqttPassword))
         {
             Serial.println("Reconnected!");
                 //Make all subscriptions here again.

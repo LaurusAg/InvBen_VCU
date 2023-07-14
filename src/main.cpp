@@ -15,38 +15,50 @@
 #include "delay.h"
 
 Delay sensorDelay;
+Delay reconnectionDelay;
 
 
 void setup() {
   Serial.begin(115200);
 
+  ventilatorInit();
+
   setup_wifi();
   setup_mqtt();
 
+
   //time declarations:
   sensorDelay.start(5000);
-
+  reconnectionDelay.start(250);
 }
 
 void loop() {
   
 
-        //make a clock period here to use non-blocking functions!
-        if(!client.connected()) 
+  if(reconnectionDelay.isExpired())
+  {
+      if(!client.connected()) 
         {
           reconnect();
         }
-
-        client.loop(); 
+        reconnectionDelay.reset();
+  }
+        
+//Declare client loop to handle PubSubclient service.
+  client.loop();
 
   
   if(sensorDelay.isExpired())
   {
-       float pressureValue = pressureControl();
+        float pressureValue = pressureControl();
         Serial.println(pressureValue);
-
+        bool result = logicProcess(pressureValue);
+        //Go to publish value of result!
+        
         sensorDelay.reset();
   }
+
+
 
 
 }

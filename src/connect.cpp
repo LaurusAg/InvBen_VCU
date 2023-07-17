@@ -44,7 +44,7 @@ void setup_wifi()
  */
 void setup_mqtt()
 {
-
+    client.setServer(benavidezConnection.mqtt_server, benavidezConnection.mqttPort);
 
     while(!client.connected()) {
         Serial.println("Connecting to mqtt server..");
@@ -65,7 +65,7 @@ void setup_mqtt()
     */
     
     delay(10);
-client.setServer(benavidezConnection.mqtt_server, benavidezConnection.mqttPort);
+
 }
 
 

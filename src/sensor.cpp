@@ -6,7 +6,12 @@
   ventilator backupVentilator;
   ventilator presurizationFan;
   
+  Delay safetyTimeDelay;
+  Delay valveTimer;
 
+  #define closed 0
+  #define open 1
+  #define valveTime 30000
 
 struct conversion
 {
@@ -28,9 +33,11 @@ void ventilatorInit()
   backupVentilator.vent_state = false;
   backupVentilator.on_pressure = 200; 
   backupVentilator.off_pressure = 700;
+  backupVentilator.valvePosition = closed; //Assuming that closed is false.
   
   presurizationFan.vent_state = false;
- 
+  presurizationFan.on_pressure = 650;
+  presurizationFan.off_pressure = 900;
 }
 
 
@@ -90,8 +97,18 @@ bool logicProcess(float pressure)
   {
     if(actualPressure < backupVentilator.on_pressure)
     {
-      //TURN ON DIGITAL OUTPUT!.
-      backupVentilator.vent_state = true;
+      //Change valve position.
+      backupVentilator.valvePosition = open;
+      valveTimer.start(valveTime);
+      //digitalWrite(D1, open)
+
+      //Wait 30 seconds minimun.
+      if (valveTimer.isExpired() == true) 
+      {
+          //digitalWrite(D2, HIGH);
+           backupVentilator.vent_state = true;
+           valveTimer.stop();
+      }
       
       return backupVentilator.vent_state;
     }
@@ -99,16 +116,53 @@ bool logicProcess(float pressure)
   {
     if (actualPressure > backupVentilator.off_pressure)
     {
-      //TURN OFF DIGITAL OUTPUT!
-      backupVentilator.vent_state = false;
+      //Change valve position.
+      backupVentilator.valvePosition = closed;
+      valveTimer.start(valveTime);
+      //digitalWrite(D1, closed);
+
+      //Wait 30 seconds minimun.
+      if(valveTimer.isExpired() == true)
+      {
+          //TURN OFF DIGITAL OUTPUT!
+          //digitalWrite(D2, LOW);
+          backupVentilator.vent_state = false;
+          valveTimer.stop();
+      }
       return backupVentilator.vent_state;
     }
   }
   
   publishVentState(backupVentilator.vent_state);
-
+  presurization (backupVentilator.vent_state, actualPressure);
 
   return false;
 
 }
 
+
+void presurization (bool backupVentState, float pressure)
+{
+  bool ventState = backupVentState ;
+  float actualPressure = pressure ;
+
+  const uint32_t safetyTime(120000); // Two minutes to reach the pressure value. 
+
+
+  if (ventState == true)
+  {
+    safetyTimeDelay.start(safetyTime);
+
+      if ( (safetyTimeDelay.isExpired() == true) && (actualPressure < presurizationFan.on_pressure) ) //if it's been 2 minutes since we started the backupVent and hasn't reached the minimun pressure.
+      {
+        
+        //TURN ON EXIT for presurization fan.
+        
+        safetyTimeDelay.reset();
+      }
+
+  }
+
+  //Add turn off method. under what logic? 
+
+}

@@ -16,7 +16,6 @@
 
 Delay sensorDelay;
 Delay reconnectionDelay;
-Delay backupDelay;
 
 void setup() {
   Serial.begin(115200);
@@ -29,7 +28,6 @@ void setup() {
   //time declarations:
   sensorDelay.start(5000);
   reconnectionDelay.start(250);
-  backupDelay.start(60000);
 }
 
 void loop() {

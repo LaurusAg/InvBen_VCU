@@ -12,11 +12,12 @@ class Delay
         void start(unsigned long interval);
         bool isExpired();
         void reset();
-
+        void stop();
 
     private:
         unsigned long start_time;
         unsigned long interval_time;
+        bool stopped; 
 };
 
 

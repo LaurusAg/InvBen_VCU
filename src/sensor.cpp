@@ -1,8 +1,12 @@
 #include <Arduino.h>
 #include "sensor.h"
 #include "connect.h"
+#include "delay.h"
 
   ventilator backupVentilator;
+  ventilator presurizationFan;
+  
+
 
 struct conversion
 {
@@ -24,7 +28,9 @@ void ventilatorInit()
   backupVentilator.vent_state = false;
   backupVentilator.on_pressure = 200; 
   backupVentilator.off_pressure = 700;
-
+  
+  presurizationFan.vent_state = false;
+ 
 }
 
 
@@ -67,6 +73,15 @@ float pressureControl()
     
 }
 
+
+/**
+ * @brief logicProcess takes the value of pressure from pressureControl and use it to check if it's neccesary to turn ON or OFF the backup ventilator
+ *        also start a timer when the backup it's ON in order to turn ON a presurization vent if too much time pass and we don't reach a threshold pressure.
+ * 
+ * @param pressure pressure coming from the diferential pressure sensor, reading on pressureControl function.
+ * 
+ * @return NULL.
+ */
 bool logicProcess(float pressure)
 {
   float actualPressure = pressure;
@@ -77,11 +92,12 @@ bool logicProcess(float pressure)
     {
       //TURN ON DIGITAL OUTPUT!.
       backupVentilator.vent_state = true;
+      
       return backupVentilator.vent_state;
     }
   } else if ( backupVentilator.vent_state == true)
   {
-    if (actualPressure < backupVentilator.off_pressure)
+    if (actualPressure > backupVentilator.off_pressure)
     {
       //TURN OFF DIGITAL OUTPUT!
       backupVentilator.vent_state = false;

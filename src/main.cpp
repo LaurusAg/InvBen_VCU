@@ -11,8 +11,9 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include "connect.h"
-#include "sensor.h"
+#include "logic.h"
 #include "delay.h"
+#include "HAL.h"
 
 Delay sensorDelay;
 Delay reconnectionDelay;
@@ -24,7 +25,8 @@ void setup() {
   setup_wifi();
   setup_mqtt();
 
-
+  halSetup();
+  
   //time declarations:
   sensorDelay.start(5000);
   reconnectionDelay.start(250);

@@ -1,8 +1,8 @@
-//Header file for sensor functions
+//Header file for logic functions
 //In this file we can find al the function declarations.
 
-#ifndef SENSOR_H
-#define SENSOR_H
+#ifndef LOGIC_H
+#define LOGIC_H
 
     typedef struct 
     {

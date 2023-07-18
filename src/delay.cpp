@@ -26,11 +26,11 @@ void Delay::start(unsigned long interval)
  */
 bool Delay::isExpired()
 {
-    if (stopped)
+    if (stopped == true)
     {
         return false;
     }
-    
+
     return (millis() - start_time >= interval_time);
 }
 

@@ -1,7 +1,8 @@
 #include <Arduino.h>
-#include "sensor.h"
+#include "logic.h"
 #include "connect.h"
 #include "delay.h"
+#include "HAL.h"
 
   ventilator backupVentilator;
   ventilator presurizationFan;
@@ -101,36 +102,38 @@ bool logicProcess(float pressure)
       backupVentilator.valvePosition = open;
       valveTimer.start(valveTime);
       //digitalWrite(D1, open)
+      turnON(VALVE_PIN);
 
       //Wait 30 seconds minimun.
       if (valveTimer.isExpired() == true) 
       {
-          //digitalWrite(D2, HIGH);
+          turnON(BACKUPVENT_PIN);
            backupVentilator.vent_state = true;
            valveTimer.stop();
-      }
-      
-      return backupVentilator.vent_state;
+      }     
     }
+    return backupVentilator.vent_state;
+
   } else if ( backupVentilator.vent_state == true)
   {
     if (actualPressure > backupVentilator.off_pressure)
     {
       //Change valve position.
       backupVentilator.valvePosition = closed;
+      turnOFF(VALVE_PIN);
       valveTimer.start(valveTime);
-      //digitalWrite(D1, closed);
+      
 
       //Wait 30 seconds minimun.
       if(valveTimer.isExpired() == true)
       {
           //TURN OFF DIGITAL OUTPUT!
-          //digitalWrite(D2, LOW);
+          turnOFF(BACKUPVENT_PIN);
           backupVentilator.vent_state = false;
           valveTimer.stop();
       }
-      return backupVentilator.vent_state;
     }
+    return backupVentilator.vent_state;
   }
   
   publishVentState(backupVentilator.vent_state);
@@ -153,16 +156,21 @@ void presurization (bool backupVentState, float pressure)
   {
     safetyTimeDelay.start(safetyTime);
 
-      if ( (safetyTimeDelay.isExpired() == true) && (actualPressure < presurizationFan.on_pressure) ) //if it's been 2 minutes since we started the backupVent and hasn't reached the minimun pressure.
+      if (safetyTimeDelay.isExpired() == true ) //if it's been 2 minutes since we started the backupVent and hasn't reached the minimun pressure.
       {
-        
-        //TURN ON EXIT for presurization fan.
+        if ((actualPressure < presurizationFan.on_pressure))
+        {
+              //TURN ON EXIT for presurization fan.
+              turnON(PRESURIZATION_PIN);
         
         safetyTimeDelay.reset();
-      }
-
+        }else 
+        {
+          //TURN OFF EXIT for presurization fan.
+          turnOFF(PRESURIZATION_PIN);
+          safetyTimeDelay.reset();
+        }
+    
+      } 
   }
-
-  //Add turn off method. under what logic? 
-
 }

@@ -112,7 +112,7 @@ void callback()
 */
 void publishPressure(float pressure)
 {
-    const char* topic = "VCU/pressure";
+    const char* topic = "VCU/PRESSURE";
     char message[10];
     snprintf(message, sizeof(message), "%.2f", pressure);
     client.publish(topic,message);

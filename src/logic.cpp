@@ -114,7 +114,7 @@ bool logicProcess(float pressure)
     }
     return backupVentilator.vent_state;
 
-  } else if ( backupVentilator.vent_state == true)
+  } else
   {
     if (actualPressure > backupVentilator.off_pressure)
     {

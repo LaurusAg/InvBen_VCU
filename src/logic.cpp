@@ -34,7 +34,7 @@ struct conversion
 void ventilatorInit()
 {
   backupVentilator.vent_state = false;
-  backupVentilator.on_pressure = 200; 
+  backupVentilator.on_pressure = 10; 
   backupVentilator.off_pressure = 700;
   backupVentilator.valvePosition = closed; //Assuming that closed is false.
   
@@ -43,7 +43,7 @@ void ventilatorInit()
   presurizationFan.off_pressure = 900;
 
   delayInit(&safetyTimeDelay, DELAY_2_M);
-  delayInit(&valveTimer, DELAY_30_S);
+  
 }
 
 
@@ -101,51 +101,46 @@ bool logicProcess(float pressure)
     {
         if (actualPressure < backupVentilator.on_pressure)
         {
-            // Change valve position.
-            backupVentilator.valvePosition = open;
-            if (!delayRead(&valveTimer))
-            {
-                // The valve is still opening, no need to turn on the ventilator yet.
-                turnOnRelay(VALVE_PIN);
-            }
-            else
-            {
-                // The valve has opened completely, turn on the ventilator.
-                turnOnRelay(BACKUPVENT_PIN);
-                backupVentilator.vent_state = true;
-                delayWrite(&valveTimer, DELAY_30_S); // Reiniciar el temporizador para su uso futuro
-            }
+          delayInit(&valveTimer, DELAY_30_S);
+          turnOnRelay(VALVE_PIN);
+          backupVentilator.valvePosition = open;
+
+          if(delayRead(&valveTimer) && backupVentilator.valvePosition == open)
+          {
+            turnOnRelay(BACKUPVENT_PIN);
+            backupVentilator.vent_state = true;
+            delayWrite(&valveTimer,DELAY_30_S);
+          }
         }
         return backupVentilator.vent_state;
-    }
-    else
-    {
+    }    else if (backupVentilator.vent_state == true)
+     {
+
         if (actualPressure > backupVentilator.off_pressure)
         {
-            // Close the valve, wait 30 seconds, and turn off the ventilator.
+            delayWrite(&valveTimer, 0);
+            turnOffRelay(VALVE_PIN);
+            delayInit(&valveTimer, DELAY_30_S);
             backupVentilator.valvePosition = closed;
-            if (!delayRead(&valveTimer))
+
+            if(delayRead(&valveTimer) && backupVentilator.valvePosition == closed)
             {
-                // The valve is still closing, no need to turn off the ventilator yet.
-                turnOffRelay(VALVE_PIN);
-            }
-            else
-            {
-                // The valve has closed completely, turn off the ventilator.
-                turnOffRelay(BACKUPVENT_PIN);
-                backupVentilator.vent_state = false;
-                delayWrite(&valveTimer, DELAY_30_S); // Reiniciar el temporizador para su uso futuro
+              turnOffRelay(BACKUPVENT_PIN);
+              delayWrite(&valveTimer, DELAY_30_S);
+              backupVentilator.vent_state = false;
             }
         }
         return backupVentilator.vent_state;
+      }
+        // Si no se cumple ninguna de las condiciones anteriores, se ejecutan estas líneas.
+     publishVentState(backupVentilator.vent_state);
+     presurization(backupVentilator.vent_state, actualPressure);
+
+      return backupVentilator.vent_state;
     }
 
-    // Si no se cumple ninguna de las condiciones anteriores, se ejecutan estas líneas.
-    publishVentState(backupVentilator.vent_state);
-    presurization(backupVentilator.vent_state, actualPressure);
+    
 
-    return false;
-}
 
 
 

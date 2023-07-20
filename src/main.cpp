@@ -80,10 +80,12 @@ void loop() {
     delay(10);
     Serial.println(result);
     delayWrite(&sensorDelay, DELAY_5_S);
+    digitalWrite(D1, HIGH);
+    delay(250);
+    digitalWrite(D1, LOW);
   }
 
 //Declare client loop to handle PubSubclient service.
   client.loop();
  delay(10);
 }
-

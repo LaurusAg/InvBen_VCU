@@ -2,6 +2,7 @@
 #include "connect.h"
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
+#include "WiFiManager.h"
 
 WiFiClient VCU;
 PubSubClient client(VCU);
@@ -19,21 +20,23 @@ connectionInfo benavidezConnection =
 
 
 /**
- * @brief connects the device to the wifi service!
+ * @brief Calls wifi manager, start as an AP, save data for WiFi connection.
  *         has to be called from SETUP!
- * @return true if interval has expired, false if not.
+ * @return true if connected, stay on the bucle if not.
  */
 
 void setup_wifi()
 {
-
-    WiFi.begin(benavidezConnection.ssid, benavidezConnection.password);
-    while(WiFi.status() != WL_CONNECTED) 
+    WiFiManager WiFiManager;
+    if(!WiFiManager.autoConnect("VCU"))
     {
-        delay(500);
-        Serial.println(".-");
+        Serial.println("Failed to connect(timeout)");
+        ESP.reset();
+        delay(1000);
     }
-    Serial.print("Connected to WiFi!!");
+    
+    Serial.println("");
+    Serial.println("Connected to the WiFi Network");
 }
 
 
@@ -44,17 +47,19 @@ void setup_wifi()
  */
 void setup_mqtt()
 {
-    client.setServer(benavidezConnection.mqtt_server, benavidezConnection.mqttPort);
+    client.setServer(benavidezConnection.mqtt_server, benavidezConnection.mqttPort);    
 
-    while(!client.connected()) {
+    while(!client.connected()) 
+    {
         Serial.println("Connecting to mqtt server..");
-        if(!client.connect("CCU", benavidezConnection.mqttUser, benavidezConnection.mqttPassword))
+        if(client.connect("VCU", benavidezConnection.mqttUser, benavidezConnection.mqttPassword))
         {
             Serial.println("Connected to MQTT server!");
-        } else 
+        } else
         {
             Serial.println("That didn't work, failed with state: ");
             Serial.println(client.state());
+            delay(2000);
         }
     }
     

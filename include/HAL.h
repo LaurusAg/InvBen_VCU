@@ -12,5 +12,8 @@
 void halSetup();
 void turnON(uint8_t pin);
 void turnOFF(uint8_t pin);
+void halINIT();
+void turnOnRelay(uint8_t pin);
+void turnOffRelay(uint8_t pin);
 
 #endif

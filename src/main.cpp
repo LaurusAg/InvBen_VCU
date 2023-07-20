@@ -14,51 +14,76 @@
 #include "logic.h"
 #include "delay.h"
 #include "HAL.h"
+#include "APIdelay.h"
 
-Delay sensorDelay;
-Delay reconnectionDelay;
+// Delay sensorDelay;
+// Delay reconnectionDelay;
+delay_t  reconnectionDelay;
+delay_t sensorDelay;
 
 void setup() {
   Serial.begin(115200);
-
-  ventilatorInit();
+  
   setup_wifi();
   setup_mqtt();
 
-  halSetup();
+   halSetup();
+   halINIT();
+  ventilatorInit();
   
   //time declarations:
-  sensorDelay.start(5000);
-  reconnectionDelay.start(250);
+ // sensorDelay.start(5000);
+  //reconnectionDelay.start(250);
+  delayInit(&reconnectionDelay, DELAY_250_MS);
+  delayInit(&sensorDelay, DELAY_5_S);
+
 }
 
 void loop() {
   
 
-  if(reconnectionDelay.isExpired())
+/*  if(reconnectionDelay.isExpired())
   {
       if(!client.connected()) 
         {
           reconnect();
         }
         reconnectionDelay.reset();
-  }
-        
-//Declare client loop to handle PubSubclient service.
-  client.loop();
+  }*/
+        if(delayRead(&reconnectionDelay))
+        {
+          if(!client.connected())
+          {
+            reconnect();
+          }
+          delayWrite(&reconnectionDelay, DELAY_250_MS);
+        }
+
 
   
-  if(sensorDelay.isExpired())
+ /* if(sensorDelay.isExpired())
   {
         float pressureValue = pressureControl();
         Serial.println(pressureValue);
         bool result = logicProcess(pressureValue);
-        Serial.print(result);
+        Serial.println(result);
         sensorDelay.reset();
   }
+*/
 
+  if(delayRead(&sensorDelay))
+  {
+    float pressureValue = pressureControl();
+    delay(10);
+    Serial.println(pressureValue);
+    bool result = logicProcess(pressureValue);
+    delay(10);
+    Serial.println(result);
+    delayWrite(&sensorDelay, DELAY_5_S);
+  }
 
-
-
+//Declare client loop to handle PubSubclient service.
+  client.loop();
+ delay(10);
 }
 

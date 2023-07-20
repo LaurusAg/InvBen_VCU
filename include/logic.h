@@ -13,7 +13,7 @@
     bool valvePosition;
     }ventilator;
 
-
+   
 
 //Functions: 
 void ventilatorInit();
@@ -21,5 +21,6 @@ float pressureControl();
 float mapfloat(float x, float in_min, float in_max, float out_min, float out_max);
 bool logicProcess(float pressure);
 void presurization(bool estadoBackup, float pressure);
+float voltageToPressure(float voltage);
 
 #endif

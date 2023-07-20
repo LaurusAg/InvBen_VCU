@@ -3,16 +3,18 @@
 #include "connect.h"
 #include "delay.h"
 #include "HAL.h"
+#include "APIdelay.h"
 
   ventilator backupVentilator;
   ventilator presurizationFan;
   
-  Delay safetyTimeDelay;
-  Delay valveTimer;
+ // Delay safetyTimeDelay;
+  delay_t safetyTimeDelay;
+  delay_t valveTimer;
 
-  #define closed 0
-  #define open 1
-  #define valveTime 30000
+    #define closed 0
+    #define open 1 
+ 
 
 struct conversion
 {
@@ -39,6 +41,9 @@ void ventilatorInit()
   presurizationFan.vent_state = false;
   presurizationFan.on_pressure = 650;
   presurizationFan.off_pressure = 900;
+
+  delayInit(&safetyTimeDelay, DELAY_2_M);
+  delayInit(&valveTimer, DELAY_30_S);
 }
 
 
@@ -67,19 +72,84 @@ float pressureControl()
 {
 
     //Variables declaration: 
-    conversion actualValues = {0.2, 5.0, 0.0, 3500.0, 1023.0};
+    conversion actualValues = {0.23, 4.7, 0.0, 3500.0, 1023.0};
     float v;
     uint16_t sensor;
 
     sensor = analogRead(A0);
-    v =((sensor * actualValues.max_tension)/actualValues.adc_value);
-    backupVentilator.pressure = mapfloat(v, actualValues.min_tension, actualValues.max_tension, actualValues.min_pressure, actualValues.max_pressure);
-
+    v = constrain (v,actualValues.min_tension, actualValues.max_tension);
+    v = (sensor * (actualValues.max_tension/actualValues.adc_value));
+    backupVentilator.pressure = (mapfloat(v, actualValues.min_tension, actualValues.max_tension, actualValues.min_pressure, actualValues.max_pressure)-110);
+    delay(10);
+    Serial.println("Pressure: ");
+    Serial.println(backupVentilator.pressure);
+    delay(10);
     publishPressure(backupVentilator.pressure);
 
     return backupVentilator.pressure;
     
 }
+
+
+
+
+bool logicProcess(float pressure)
+{
+    float actualPressure = pressure;
+
+    if (backupVentilator.vent_state == false)
+    {
+        if (actualPressure < backupVentilator.on_pressure)
+        {
+            // Change valve position.
+            backupVentilator.valvePosition = open;
+            if (!delayRead(&valveTimer))
+            {
+                // The valve is still opening, no need to turn on the ventilator yet.
+                turnOnRelay(VALVE_PIN);
+            }
+            else
+            {
+                // The valve has opened completely, turn on the ventilator.
+                turnOnRelay(BACKUPVENT_PIN);
+                backupVentilator.vent_state = true;
+                delayWrite(&valveTimer, DELAY_30_S); // Reiniciar el temporizador para su uso futuro
+            }
+        }
+        return backupVentilator.vent_state;
+    }
+    else
+    {
+        if (actualPressure > backupVentilator.off_pressure)
+        {
+            // Close the valve, wait 30 seconds, and turn off the ventilator.
+            backupVentilator.valvePosition = closed;
+            if (!delayRead(&valveTimer))
+            {
+                // The valve is still closing, no need to turn off the ventilator yet.
+                turnOffRelay(VALVE_PIN);
+            }
+            else
+            {
+                // The valve has closed completely, turn off the ventilator.
+                turnOffRelay(BACKUPVENT_PIN);
+                backupVentilator.vent_state = false;
+                delayWrite(&valveTimer, DELAY_30_S); // Reiniciar el temporizador para su uso futuro
+            }
+        }
+        return backupVentilator.vent_state;
+    }
+
+    // Si no se cumple ninguna de las condiciones anteriores, se ejecutan estas líneas.
+    publishVentState(backupVentilator.vent_state);
+    presurization(backupVentilator.vent_state, actualPressure);
+
+    return false;
+}
+
+
+
+
 
 
 /**
@@ -90,6 +160,7 @@ float pressureControl()
  * 
  * @return NULL.
  */
+/*
 bool logicProcess(float pressure)
 {
   float actualPressure = pressure;
@@ -102,12 +173,12 @@ bool logicProcess(float pressure)
       backupVentilator.valvePosition = open;
       valveTimer.start(valveTime);
       //digitalWrite(D1, open)
-      turnON(VALVE_PIN);
+      turnOnRelay(VALVE_PIN);
 
       //Wait 30 seconds minimun.
       if (valveTimer.isExpired() == true) 
       {
-          turnON(BACKUPVENT_PIN);
+          turnOnRelay(BACKUPVENT_PIN);
            backupVentilator.vent_state = true;
            valveTimer.stop();
       }     
@@ -120,7 +191,7 @@ bool logicProcess(float pressure)
     {
       //Change valve position.
       backupVentilator.valvePosition = closed;
-      turnOFF(VALVE_PIN);
+      turnOffRelay(VALVE_PIN);
       valveTimer.start(valveTime);
       
 
@@ -128,7 +199,7 @@ bool logicProcess(float pressure)
       if(valveTimer.isExpired() == true)
       {
           //TURN OFF DIGITAL OUTPUT!
-          turnOFF(BACKUPVENT_PIN);
+          turnOffRelay(BACKUPVENT_PIN);
           backupVentilator.vent_state = false;
           valveTimer.stop();
       }
@@ -143,8 +214,8 @@ bool logicProcess(float pressure)
 
 }
 
-
-void presurization (bool backupVentState, float pressure)
+*/
+/*void presurization (bool backupVentState, float pressure)
 {
   bool ventState = backupVentState ;
   float actualPressure = pressure ;
@@ -161,16 +232,41 @@ void presurization (bool backupVentState, float pressure)
         if ((actualPressure < presurizationFan.on_pressure))
         {
               //TURN ON EXIT for presurization fan.
-              turnON(PRESURIZATION_PIN);
+              turnOnRelay(PRESURIZATION_PIN);
         
         safetyTimeDelay.reset();
         }else 
         {
           //TURN OFF EXIT for presurization fan.
-          turnOFF(PRESURIZATION_PIN);
+          turnOffRelay(PRESURIZATION_PIN);
           safetyTimeDelay.reset();
         }
     
       } 
+  }
+}*/
+
+void presurization (bool backupVentState, float pressure)
+{
+  bool ventState = backupVentState;
+  float actualPressure = pressure;
+
+  delay_t safetyTimeDelay;
+
+  if(ventState == true)
+  {
+    delayInit(&safetyTimeDelay, DELAY_2_M);
+    if(delayRead(&safetyTimeDelay))
+    {
+      if( actualPressure < presurizationFan.on_pressure)
+      {
+        turnOnRelay(PRESURIZATION_PIN);
+      }
+      else
+      {
+        turnOffRelay(PRESURIZATION_PIN);
+      }
+      delayWrite(&safetyTimeDelay, DELAY_2_M);
+    }
   }
 }

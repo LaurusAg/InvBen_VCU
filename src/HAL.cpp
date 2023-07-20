@@ -18,3 +18,20 @@ void turnOFF(uint8_t pin)
 {
     digitalWrite(pin, LOW);
 }
+
+void turnOnRelay(uint8_t pin)
+{
+    digitalWrite(pin, LOW);
+}
+
+void turnOffRelay(uint8_t pin)
+{
+    digitalWrite(pin, HIGH);
+}
+
+void halINIT()
+{
+    turnOffRelay(BACKUPVENT_PIN);
+    turnOffRelay(VALVE_PIN);
+    turnOffRelay(PRESURIZATION_PIN);
+}

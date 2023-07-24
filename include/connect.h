@@ -3,9 +3,9 @@
 
 #ifndef CONNECT_H
 #define CONNECT_H
-
+/*
 #include <ESP8266WiFi.h>
-#include <PubSubClient.h>
+//#include <PubSubClient.h>
 
 struct connectionInfo
 {
@@ -29,5 +29,5 @@ void reconnect();
 void callback();
 void publishPressure(float pressure);
 void publishVentState(bool ventState);
-
+*/
 #endif

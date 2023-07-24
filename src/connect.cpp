@@ -1,4 +1,4 @@
-#include <Arduino.h>
+/*#include <Arduino.h>
 #include "connect.h"
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
@@ -17,14 +17,14 @@ connectionInfo benavidezConnection =
     "laurus"
 };    
 
-
+*/
 
 /**
  * @brief Calls wifi manager, start as an AP, save data for WiFi connection.
  *         has to be called from SETUP!
  * @return true if connected, stay on the bucle if not.
  */
-
+/*
 void setup_wifi()
 {
     WiFiManager WiFiManager;
@@ -39,12 +39,14 @@ void setup_wifi()
     Serial.println("Connected to the WiFi Network");
 }
 
-
+*/
 /**
  * @brief connects the device with the mqtt server.
  *        after it connects, you can subscribe to topics to hear them!
  *        has to be called from SETUP!
  */
+
+/*
 void setup_mqtt()
 {
     client.setServer(benavidezConnection.mqtt_server, benavidezConnection.mqttPort);    
@@ -61,7 +63,7 @@ void setup_mqtt()
             Serial.println(client.state());
             delay(2000);
         }
-    }
+    }*/
     
     /*
     Make subscriptions here if necessary!
@@ -69,9 +71,9 @@ void setup_mqtt()
     Serial.println("subscript to TOPIC");
     */
     
-    delay(10);
+//    delay(10);
 
-}
+//}
 
 
 
@@ -81,6 +83,7 @@ void setup_mqtt()
  *from loop and stay here until we reconnect to all services! 
  * @return true if interval has expired, false if not.
  */
+/*
 void reconnect()
 {
 
@@ -96,42 +99,44 @@ void reconnect()
         }
     }
 }
-
+*/
 
 /**
  * @brief use if you have to receive orders from CCU.
  *first subscribe in setup_mqtt & reconnect.
  * 
  * @return true if interval has expired, false if not.
- */
+ *//*
 void callback()
 {
         //make subscriptions.
-}
+}*/
 
 
 /** 
 * @brief Publish value of pressure
 *
 *@return NULL
-*/
+*//*
 void publishPressure(float pressure)
 {
     const char* topic = "VCU/PRESSURE";
     char message[10];
     snprintf(message, sizeof(message), "%.2f", pressure);
     client.publish(topic,message);
-}
+}*/
 
 
 /** 
 * @brief publish value of ventilator state.
 *
 *@return NULL
-*/
+*//*
 void publishVentState(bool ventState)
 {
     const char* topic = "backupVentilator/ventState";
     const char* message = ventState ? "true" : "false";
     client.publish(topic, message);
 }
+*/
+

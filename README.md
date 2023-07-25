@@ -1,6 +1,7 @@
 # InvBen_VCU
 ## Diagrama General
 ![image](https://github.com/LaurusAg/InvBen_VCU/assets/112956184/179796f9-37e7-41ea-9939-64df46fd6628)
+![image](https://github.com/LaurusAg/InvBen_VCU/assets/112956184/c8007882-5fec-4a4d-a12c-d2e135ce335d)
 
 Las salidas correspondientes son:
 - IN1 → Ventilador

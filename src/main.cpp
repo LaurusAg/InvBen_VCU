@@ -21,7 +21,7 @@
 // delay_t sensorDelay;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("START");
  // setup_wifi();
  // setup_mqtt();

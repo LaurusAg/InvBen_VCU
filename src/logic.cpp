@@ -38,7 +38,7 @@ struct conversion
  */
 void ventilatorInit()
 {
-  backupVentilator.vent_state = true;
+  backupVentilator.vent_state = false;
   backupVentilator.on_pressure = 300; 
   backupVentilator.off_pressure = 700;
   backupVentilator.valvePosition = closed; //Assuming that closed is false.
@@ -158,7 +158,7 @@ bool logicProcess(float pressure)
     if(actualPressure < backupVentilator.on_pressure)
     {
       backupVentilator.valvePosition = open;
-      turnOnRelay(VALVE_PIN);
+      openValve();
       Serial.println("VALVULA PRENDIDA, presion menor a 300");
       //Increase timer by 1.
       timerCounter++;
@@ -184,7 +184,7 @@ if ( backupVentilator.vent_state == true)
     {Serial.println("VALVULA APAGADA, presion mayor a 700");
 
       backupVentilator.valvePosition = closed;
-      turnOffRelay(VALVE_PIN);
+      closeValve();
       //Increase timer by 1.
       timerCounter++; 
       Serial.println("timer counter: ");

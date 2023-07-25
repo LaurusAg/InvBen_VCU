@@ -2,7 +2,11 @@
 ## Diagrama General
 ![image](https://github.com/LaurusAg/InvBen_VCU/assets/112956184/179796f9-37e7-41ea-9939-64df46fd6628)
 
-
+Las salidas correspondientes son:
+- IN1 → Ventilador
+- IN2 → Presurizador
+- IN3 → Open valve (Gray T)
+- IN4 → Close valve (Black T)
 ## Descripción
 
 InvBen_VCU (Ventilator Control Unit) es un proyecto de código abierto que se centra en el control de un ventilador mediante un microcontrolador ESP8266. El sistema toma lecturas de presión de un sensor Sensirion SDP2000-l y, según los valores medidos, controla la activación y desactivación de un ventilador de backup y su respectiva válvula, al ser activado inicia un timer y controla un ventilador de presurizacion interna si es necesario. Además, se comunica con un servidor central utilizando el protocolo MQTT para enviar lecturas de presión y estados del ventilador.

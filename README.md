@@ -1,7 +1,6 @@
 # InvBen_VCU
-## Diagrama General
-![image](https://github.com/LaurusAg/InvBen_VCU/assets/112956184/303aec93-2852-429a-8786-0612aed46b27)
 
+![VCU Image](url/to/image)
 
 ## Descripción
 

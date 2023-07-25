@@ -1,6 +1,9 @@
 #include <Arduino.h>
 #include <delay.h>
 
+
+
+
 Delay::Delay()
 {
     start_time = 0;
@@ -20,7 +23,7 @@ void Delay::start(unsigned long interval)
     stopped = false;
 }
 /**
- * @brief Checks if interval of time has expired.
+ * @brief Checks if interval of time has expired. or if its stopped.
  * 
  * @return true if interval has expired, false if not.
  */

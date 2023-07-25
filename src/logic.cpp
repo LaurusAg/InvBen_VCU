@@ -7,14 +7,19 @@
 
   ventilator backupVentilator;
   ventilator presurizationFan;
-  
- // Delay safetyTimeDelay;
-  delay_t safetyTimeDelay;
-  delay_t valveTimer;
+
+//delay_t valveTimer;
 
     #define closed 0
     #define open 1 
  
+unsigned long timerCounter = 0;
+unsigned long timerCounter2 = 0;
+const uint8_t timerCounterInterval = 5;
+const uint8_t timerCounterInterval2 = 4;
+const uint8_t timerCounterInterval3 = 18;
+#define RESET 0
+
 
 struct conversion
 {
@@ -34,7 +39,7 @@ struct conversion
 void ventilatorInit()
 {
   backupVentilator.vent_state = false;
-  backupVentilator.on_pressure = 200; 
+  backupVentilator.on_pressure = 300; 
   backupVentilator.off_pressure = 700;
   backupVentilator.valvePosition = closed; //Assuming that closed is false.
   
@@ -42,8 +47,8 @@ void ventilatorInit()
   presurizationFan.on_pressure = 650;
   presurizationFan.off_pressure = 900;
 
-  delayInit(&safetyTimeDelay, DELAY_2_M);
-  delayInit(&valveTimer, DELAY_30_S);
+ // delayInit(&safetyTimeDelay, DELAY_2_M);
+ // delayInit(&valveTimer,DELAY_30_S);
 }
 
 
@@ -84,15 +89,152 @@ float pressureControl()
     Serial.println("Pressure: ");
     Serial.println(backupVentilator.pressure);
     delay(10);
-    publishPressure(backupVentilator.pressure);
+    //publishPressure(backupVentilator.pressure);
 
     return backupVentilator.pressure;
     
 }
 
 
+void presurization (bool backupVentState, float pressure)
+{
+  Serial.println("Entramos en presurization");
+  bool ventState = backupVentState;
+  float actualPressure = pressure;
 
 
+  if ( ventState == true)
+  {
+    //increase timer 18 times to reach 100 seconds
+    timerCounter2++;
+    Serial.println("timer counter: ");
+      Serial.println(timerCounter2);
+    if(timerCounter2 >= timerCounterInterval3)
+    {
+      if(actualPressure < presurizationFan.on_pressure)
+      {
+        turnOnRelay(PRESURIZATION_PIN);
+        Serial.println("PRESURIZADOR PRENDIDO");
+        timerCounter2 = RESET;
+      }
+      else if (actualPressure > presurizationFan.on_pressure)
+      {
+        turnOffRelay(PRESURIZATION_PIN);
+        Serial.println("PRESURIZADOR APAGADO");
+        timerCounter2 = RESET;
+      }
+      
+
+    }
+
+  }
+
+  if ( ventState == false)
+  {
+    turnOffRelay(PRESURIZATION_PIN);
+    Serial.println("PRESURIZADOR APAGADO por las dudas");
+  }
+
+}
+
+
+/**
+ * @brief logicProcess takes the value of pressure from pressureControl and use it to check if it's neccesary to turn ON or OFF the backup ventilator
+ *        also start a timer when the backup it's ON in order to turn ON a presurization vent if too much time pass and we don't reach a threshold pressure.
+ * 
+ * @param pressure pressure coming from the diferential pressure sensor, reading on pressureControl function.
+ * 
+ * @return NULL.
+ */
+
+bool logicProcess(float pressure)
+{
+  float actualPressure = pressure;
+  Serial.println("PRESION: ");
+  Serial.println(pressure);
+
+  if ( backupVentilator.vent_state == false)
+  {
+    if(actualPressure < backupVentilator.on_pressure)
+    {
+      backupVentilator.valvePosition = open;
+      openValve();
+      Serial.println("VALVULA PRENDIDA, presion menor a 300");
+      //Increase timer by 1.
+      timerCounter++;
+      Serial.println("timer counter: ");
+      Serial.println(timerCounter);
+      //logicProcess executes every 5.3 seconds. 5 timer counter means 27 seconds.
+      if( timerCounter >= timerCounterInterval )
+       {
+          turnOnRelay(BACKUPVENT_PIN);
+          Serial.println("VENTILADOR PRENDIDO");
+           backupVentilator.vent_state = true;
+           timerCounter = RESET;
+      }   
+    }
+    return backupVentilator.vent_state;
+     
+
+  } 
+
+if ( backupVentilator.vent_state == true)
+  {
+    if (actualPressure > backupVentilator.off_pressure)
+    {Serial.println("VALVULA APAGADA, presion mayor a 700");
+
+      backupVentilator.valvePosition = closed;
+      closeValve();
+      //Increase timer by 1.
+      timerCounter++; 
+      Serial.println("timer counter: ");
+      Serial.println(timerCounter);
+      //logicProcess executes every 5.3 seconds. 4 timer counter means 22 seconds.
+      if(timerCounter >= timerCounterInterval2)
+      {
+          turnOffRelay(BACKUPVENT_PIN);
+           Serial.println("VENTILADOR APAGADO");
+          backupVentilator.vent_state = false;
+          timerCounter = RESET;
+      }
+    }
+    return backupVentilator.vent_state;
+    presurization (backupVentilator.vent_state, actualPressure);
+  }
+  
+ // publishVentState(backupVentilator.vent_state);
+  presurization (backupVentilator.vent_state, actualPressure);
+
+  return false;
+
+}
+
+
+
+
+
+
+
+ /*  if(delayRead(&safetyTimeDelay))
+    {
+      if( actualPressure < presurizationFan.on_pressure)
+      {
+        turnOnRelay(PRESURIZATION_PIN);
+      }
+      else
+      {
+        turnOffRelay(PRESURIZATION_PIN);
+      }
+      delayWrite(&safetyTimeDelay, DELAY_2_M);
+    }
+
+  */ 
+
+
+
+
+
+/*
 bool logicProcess(float pressure)
 {
     float actualPressure = pressure;
@@ -103,6 +245,8 @@ bool logicProcess(float pressure)
         {
             // Change valve position.
             backupVentilator.valvePosition = open;
+            turnOnRelay(VALVE_PIN);
+
             if (!delayRead(&valveTimer))
             {
                 // The valve is still opening, no need to turn on the ventilator yet.
@@ -146,75 +290,8 @@ bool logicProcess(float pressure)
 
     return false;
 }
-
-
-
-
-
-
-/**
- * @brief logicProcess takes the value of pressure from pressureControl and use it to check if it's neccesary to turn ON or OFF the backup ventilator
- *        also start a timer when the backup it's ON in order to turn ON a presurization vent if too much time pass and we don't reach a threshold pressure.
- * 
- * @param pressure pressure coming from the diferential pressure sensor, reading on pressureControl function.
- * 
- * @return NULL.
- */
-/*
-bool logicProcess(float pressure)
-{
-  float actualPressure = pressure;
-
-  if ( backupVentilator.vent_state == false)
-  {
-    if(actualPressure < backupVentilator.on_pressure)
-    {
-      //Change valve position.
-      backupVentilator.valvePosition = open;
-      valveTimer.start(valveTime);
-      //digitalWrite(D1, open)
-      turnOnRelay(VALVE_PIN);
-
-      //Wait 30 seconds minimun.
-      if (valveTimer.isExpired() == true) 
-      {
-          turnOnRelay(BACKUPVENT_PIN);
-           backupVentilator.vent_state = true;
-           valveTimer.stop();
-      }     
-    }
-    return backupVentilator.vent_state;
-
-  } else
-  {
-    if (actualPressure > backupVentilator.off_pressure)
-    {
-      //Change valve position.
-      backupVentilator.valvePosition = closed;
-      turnOffRelay(VALVE_PIN);
-      valveTimer.start(valveTime);
-      
-
-      //Wait 30 seconds minimun.
-      if(valveTimer.isExpired() == true)
-      {
-          //TURN OFF DIGITAL OUTPUT!
-          turnOffRelay(BACKUPVENT_PIN);
-          backupVentilator.vent_state = false;
-          valveTimer.stop();
-      }
-    }
-    return backupVentilator.vent_state;
-  }
-  
-  publishVentState(backupVentilator.vent_state);
-  presurization (backupVentilator.vent_state, actualPressure);
-
-  return false;
-
-}
-
 */
+
 /*void presurization (bool backupVentState, float pressure)
 {
   bool ventState = backupVentState ;
@@ -245,28 +322,3 @@ bool logicProcess(float pressure)
       } 
   }
 }*/
-
-void presurization (bool backupVentState, float pressure)
-{
-  bool ventState = backupVentState;
-  float actualPressure = pressure;
-
-  delay_t safetyTimeDelay;
-
-  if(ventState == true)
-  {
-    delayInit(&safetyTimeDelay, DELAY_2_M);
-    if(delayRead(&safetyTimeDelay))
-    {
-      if( actualPressure < presurizationFan.on_pressure)
-      {
-        turnOnRelay(PRESURIZATION_PIN);
-      }
-      else
-      {
-        turnOffRelay(PRESURIZATION_PIN);
-      }
-      delayWrite(&safetyTimeDelay, DELAY_2_M);
-    }
-  }
-}

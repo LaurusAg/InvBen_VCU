@@ -5,6 +5,12 @@
 #define DELAY_H
 #include <Arduino.h>
 
+#define DELAY_5_S 5000
+#define DELAY_250_MS 250
+#define DELAY_30_S 30000
+#define DELAY_2_M 120000
+
+
 class Delay
 {
     public:

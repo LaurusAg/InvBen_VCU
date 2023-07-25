@@ -8,41 +8,41 @@
 
 
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
-#include <PubSubClient.h>
-#include "connect.h"
+//#include <ESP8266WiFi.h>
+//#include <PubSubClient.h>
+//#include "connect.h"
 #include "logic.h"
 #include "delay.h"
 #include "HAL.h"
-#include "APIdelay.h"
 
-// Delay sensorDelay;
-// Delay reconnectionDelay;
-delay_t  reconnectionDelay;
-delay_t sensorDelay;
+ Delay sensorDelay;
+ Delay reconnectionDelay;
+// delay_t  reconnectionDelay;
+// delay_t sensorDelay;
 
 void setup() {
   Serial.begin(115200);
-  
-  setup_wifi();
-  setup_mqtt();
+  Serial.println("START");
+ // setup_wifi();
+ // setup_mqtt();
 
    halSetup();
    halINIT();
   ventilatorInit();
   
   //time declarations:
- // sensorDelay.start(5000);
-  //reconnectionDelay.start(250);
-  delayInit(&reconnectionDelay, DELAY_250_MS);
-  delayInit(&sensorDelay, DELAY_5_S);
+  sensorDelay.start(DELAY_5_S);
+  reconnectionDelay.start(DELAY_250_MS);
+
+ /*  delayInit(&reconnectionDelay, DELAY_250_MS);
+  delayInit(&sensorDelay, DELAY_5_S); */ 
 
 }
 
 void loop() {
   
 
-/*  if(reconnectionDelay.isExpired())
+  /*  if(reconnectionDelay.isExpired())
   {
       if(!client.connected()) 
         {
@@ -50,28 +50,29 @@ void loop() {
         }
         reconnectionDelay.reset();
   }*/
-        if(delayRead(&reconnectionDelay))
+  
+    /*  if(delayRead(&reconnectionDelay))
         {
           if(!client.connected())
           {
             reconnect();
           }
           delayWrite(&reconnectionDelay, DELAY_250_MS);
-        }
+        }*/
 
 
   
- /* if(sensorDelay.isExpired())
+ if(sensorDelay.isExpired())
   {
         float pressureValue = pressureControl();
-        Serial.println(pressureValue);
+        //bool result = logicProcess(pressureValue);
         bool result = logicProcess(pressureValue);
-        Serial.println(result);
+        presurization(result, pressureValue);
         sensorDelay.reset();
   }
-*/
 
-  if(delayRead(&sensorDelay))
+
+/*  if(delayRead(&sensorDelay))
   {
     float pressureValue = pressureControl();
     delay(10);
@@ -80,10 +81,11 @@ void loop() {
     delay(10);
     Serial.println(result);
     delayWrite(&sensorDelay, DELAY_5_S);
-  }
+    */
+
 
 //Declare client loop to handle PubSubclient service.
-  client.loop();
+ // client.loop();
  delay(10);
 }
 

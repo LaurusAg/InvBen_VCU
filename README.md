@@ -22,7 +22,7 @@ InvBen_VCU (Ventilator Control Unit) es un proyecto de código abierto que se ce
 
 ## Documentación
 
-Para obtener información detallada sobre el hardware utilizado, el esquema de conexión y las instrucciones de instalación, consulta la [documentación completa](https://docs.google.com/document/d/1er2ryaZUrqvdSAgWftjVdzeU2lDJZCezcVUX3w-lUkQ/edit#heading=h.yx1uad71hza5).
+Para obtener información detallada sobre el hardware utilizado, el esquema de conexión y las instrucciones de instalación, consulta la [documentación completa]https://docs.google.com/document/d/1er2ryaZUrqvdSAgWftjVdzeU2lDJZCezcVUX3w-lUkQ/edit#heading=h.yx1uad71hza5
 
 ## Instalación y Uso
 
